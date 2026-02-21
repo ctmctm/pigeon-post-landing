@@ -93,13 +93,10 @@ export default function LandingPage() {
         className="block absolute top-0 left-0 z-10"
       />
 
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-white/90 z-20 pointer-events-none select-none">
-        <h1 className="text-[3rem] sm:text-[2rem] md:text-[3rem] uppercase tracking-[0.3rem] mb-2 drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">
-          The Void
-        </h1>
-        <p className="text-[1.2rem] sm:text-[1rem] md:text-[1.2rem] tracking-[0.1rem] opacity-70">
-          v i b e s &nbsp; o n l y
-        </p>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-20 pointer-events-none select-none">
+        <div className="text-[5rem] sm:text-[4rem] md:text-[6rem] drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+          ðŸ ž
+        </div>
       </div>
     </div>
   );
