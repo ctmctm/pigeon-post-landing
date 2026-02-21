@@ -1,72 +1,106 @@
-import Link from "next/link";
+"use client";
+
+import { useEffect, useRef } from "react";
 
 export default function LandingPage() {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+
+    let width, height;
+
+    function resize() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+    }
+
+    window.addEventListener("resize", resize);
+    resize();
+
+    const numPoints = 5;
+    const historySize = 35;
+    let history = [];
+    let hue = 0;
+
+    let points = [];
+    for (let i = 0; i < numPoints; i++) {
+      points.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 6,
+        vy: (Math.random() - 0.5) * 6,
+      });
+    }
+
+    let animationFrameId;
+
+    function animate() {
+      ctx.fillStyle = "#020202";
+      ctx.fillRect(0, 0, width, height);
+
+      for (let i = 0; i < numPoints; i++) {
+        let p = points[i];
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x <= 0 || p.x >= width) p.vx *= -1;
+        if (p.y <= 0 || p.y >= height) p.vy *= -1;
+      }
+
+      let currentShape = points.map((p) => ({ x: p.x, y: p.y }));
+      history.push(currentShape);
+      if (history.length > historySize) {
+        history.shift();
+      }
+
+      hue += 0.8;
+
+      for (let i = 0; i < history.length; i++) {
+        let shape = history[i];
+        ctx.beginPath();
+        ctx.moveTo(shape[0].x, shape[0].y);
+        for (let j = 1; j < shape.length; j++) {
+          ctx.lineTo(shape[j].x, shape[j].y);
+        }
+        ctx.closePath();
+
+        let alpha = (i + 1) / history.length;
+        ctx.strokeStyle = `hsla(${hue + i * 2}, 100%, 60%, ${alpha})`;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+
+      animationFrameId = requestAnimationFrame(animate);
+    }
+
+    animate();
+
+    return () => {
+      window.removeEventListener("resize", resize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen bg-[#FAF8F4] flex flex-col font-sans selection:bg-[#ff8a1f]/20">
-      {/* Navigation */}
-      <header className="px-6 py-8 flex justify-between items-center max-w-5xl mx-auto w-full">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[linear-gradient(130deg,#ffd447_0%,#ff8a1f_45%,#ff4e2f_100%)] text-white text-xl font-serif shadow-lg">
-            P
-          </div>
-          <span className="text-2xl font-serif font-bold text-[#2b160f]">Pigeon Post</span>
-        </div>
-        <div className="flex gap-4">
-          <Link href="#" className="px-5 py-2 text-sm font-semibold text-[#2b160f] hover:text-[#ff8a1f] transition-colors">
-            Log in
-          </Link>
-          <Link href="#" className="px-5 py-2 text-sm font-semibold bg-black text-white rounded-full hover:bg-black/80 transition-all shadow-sm">
-            Get Started
-          </Link>
-        </div>
-      </header>
+    <div className="relative w-full h-screen overflow-hidden bg-[#020202] font-mono selection:bg-white/20">
+      <canvas
+        ref={canvasRef}
+        className="block absolute top-0 left-0 z-10"
+      />
 
-      {/* Hero Section */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 text-center max-w-4xl mx-auto pb-20">
-        <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-[#ff8a1f]/10 text-[#7c2514] text-xs font-bold uppercase tracking-[0.1em] border border-[#ff8a1f]/20">
-          Coming Soon
-        </div>
-        
-        <h1 className="text-5xl md:text-7xl font-serif font-bold text-[#2b160f] leading-[1.1] mb-8">
-          Turn family photos into <span className="italic">weekly dispatches</span> in minutes.
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-white/90 z-20 pointer-events-none select-none">
+        <h1 className="text-[3rem] sm:text-[2rem] md:text-[3rem] uppercase tracking-[0.3rem] mb-2 drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">
+          The Void
         </h1>
-        
-        <p className="text-lg md:text-xl text-black/60 max-w-2xl mb-12 leading-relaxed">
-          Pigeon Post helps you share the magic of your week with the people who care most. Just drop your photos, and we'll help you tell the story.
+        <p className="text-[1.2rem] sm:text-[1rem] md:text-[1.2rem] tracking-[0.1rem] opacity-70">
+          v i b e s &nbsp; o n l y
         </p>
-
-        <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
-          <Link href="#" className="flex-1 bg-black text-white text-lg font-bold py-4 rounded-2xl hover:bg-black/90 transition-all shadow-xl hover:scale-[1.02] active:scale-[0.98]">
-            Join the beta
-          </Link>
-        </div>
-
-        {/* Features Preview */}
-        <div className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-          <div className="p-6 rounded-3xl bg-white/50 border border-black/5 shadow-sm">
-            <div className="text-2xl mb-4">ðŸ“¸</div>
-            <h3 className="font-serif font-bold text-xl mb-2 text-[#2b160f]">Easy Upload</h3>
-            <p className="text-black/50 text-sm">Drop up to 5 photos from your week. We'll handle the compression and metadata.</p>
-          </div>
-          <div className="p-6 rounded-3xl bg-white/50 border border-black/5 shadow-sm">
-            <div className="text-2xl mb-4">âœ¨</div>
-            <h3 className="font-serif font-bold text-xl mb-2 text-[#2b160f]">AI Interview</h3>
-            <p className="text-black/50 text-sm">We'll ask a few thoughtful questions to draw out the stories behind your favorite moments.</p>
-          </div>
-          <div className="p-6 rounded-3xl bg-white/50 border border-black/5 shadow-sm">
-            <div className="text-2xl mb-4">ðŸ“¬</div>
-            <h3 className="font-serif font-bold text-xl mb-2 text-[#2b160f]">Instant Dispatch</h3>
-            <p className="text-black/50 text-sm">One click to generate a beautiful, Substack-style newsletter ready to share with family.</p>
-          </div>
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="py-12 border-t border-black/5 text-center px-6">
-        <p className="text-black/30 text-sm">
-          Â© 2026 Pigeon Post. Made with love for family.
-        </p>
-      </footer>
+      </div>
     </div>
   );
 }
