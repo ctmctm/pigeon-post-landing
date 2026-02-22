@@ -387,6 +387,13 @@ export default function LandingPage() {
       return { x, y };
     }
 
+    function smoothPulse(progress, center, width) {
+      const d = Math.abs(progress - center);
+      if (d >= width) return 0;
+      const x = 1 - d / width;
+      return x * x * (3 - 2 * x);
+    }
+
     function getLandingTarget(index, total) {
       if (index === 0) {
         return { x: W / 2, y: H - 30 };
@@ -485,12 +492,13 @@ export default function LandingPage() {
 
       const { x, y } = pigeonPos(t);
       const progress = (t % LOOP) / LOOP;
-      const dropWindow = progress > 0.39 && progress < 0.48;
+      const dropPulse = smoothPulse(progress, 0.435, 0.07);
+      const glidePulse = smoothPulse(progress, 0.72, 0.12);
 
-      const flapRate = dropWindow ? 0.29 : progress > 0.62 ? 0.18 : 0.22;
+      const flapRate = 0.22 + dropPulse * 0.07 - glidePulse * 0.04;
       const flapT = t * flapRate + Math.sin(t * 0.03) * 0.35;
-      const wingAmp = dropWindow ? 1.16 : progress > 0.62 ? 0.8 : 1.0;
-      const bob = Math.sin(t * 0.12) * 1.6 + (dropWindow ? -1.1 : 0);
+      const wingAmp = 1 + dropPulse * 0.16 - glidePulse * 0.2;
+      const bob = Math.sin(t * 0.12) * 1.55 - dropPulse * 0.9;
 
       trail.push({ x, y });
       if (trail.length > TRAIL) trail.shift();
