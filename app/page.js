@@ -387,10 +387,20 @@ export default function LandingPage() {
       return { x, y };
     }
 
+    function getLandingTarget(index, total) {
+      const laneCount = Math.min(19, 7 + Math.floor(total / 8));
+      const spread = Math.min(W * 0.46, 150 + total * 3.2);
+      const lane = index % laneCount;
+      const laneFrac = laneCount <= 1 ? 0.5 : lane / (laneCount - 1);
+      const centered = laneFrac - 0.5;
+      return {
+        x: W / 2 + centered * spread + (Math.random() - 0.5) * 14,
+        y: H - 30 + Math.random() * 1.5,
+      };
+    }
+
     function spawnLetter(x, y, index) {
-      const spread = Math.min(W * 0.28, 170);
-      const lane = index % 7;
-      const laneOffset = ((lane - 3) / 3) * spread * 0.5;
+      const landing = getLandingTarget(index, letters.length + 1);
       wordmarkShown = false;
       return {
         x,
@@ -403,8 +413,8 @@ export default function LandingPage() {
         sc: 0,
         landed: false,
         bounces: 0,
-        landX: W / 2 + laneOffset + (Math.random() - 0.5) * 18,
-        landY: H - 30,
+        landX: landing.x,
+        landY: landing.y,
         landRot: (Math.random() - 0.5) * 0.18,
       };
     }
@@ -525,11 +535,9 @@ export default function LandingPage() {
         Object.assign(c, f);
       });
       letters.forEach((letter, i) => {
-        const spread = Math.min(W * 0.28, 170);
-        const lane = i % 7;
-        const laneOffset = ((lane - 3) / 3) * spread * 0.5;
-        letter.landX = W / 2 + laneOffset + (Math.random() - 0.5) * 18;
-        letter.landY = H - 30;
+        const landing = getLandingTarget(i, letters.length);
+        letter.landX = landing.x;
+        letter.landY = landing.y;
       });
     };
     window.addEventListener("resize", handleResize);
