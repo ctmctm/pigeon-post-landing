@@ -5,12 +5,14 @@ import { useEffect, useRef } from "react";
 export default function LandingPage() {
   const canvasRef = useRef(null);
   const wordmarkRef = useRef(null);
+  const taglineRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     const wordmarkEl = wordmarkRef.current;
+    const taglineEl = taglineRef.current;
 
     let W, H;
     function resize() {
@@ -21,6 +23,17 @@ export default function LandingPage() {
 
     const INK = "#1C1917";
     const SIENNA = "#C8956A";
+    const PERCY = {
+      body: "#8596A3",
+      belly: "#B9C8D3",
+      wing: "#667784",
+      neckA: "rgba(126, 176, 138, 0.24)",
+      neckB: "rgba(142, 112, 188, 0.2)",
+      head: "#22201D",
+      beak: "#D7BFAD",
+      mailbag: "#CB6A5A",
+      mailbagDark: "#A95347",
+    };
 
     // ── Envelope
     function drawEnvelope(x, y, size, alpha) {
@@ -84,7 +97,7 @@ export default function LandingPage() {
       const wingY = Math.sin(flapT) * 8;
 
       // tail
-      ctx.fillStyle = "#3D3835";
+      ctx.fillStyle = "#4C5760";
       ctx.beginPath();
       ctx.moveTo(14, 3);
       ctx.bezierCurveTo(22, 0, 26, 4, 24, 8);
@@ -92,7 +105,7 @@ export default function LandingPage() {
       ctx.fill();
 
       // lower wing
-      ctx.fillStyle = "#4A4540";
+      ctx.fillStyle = PERCY.wing;
       ctx.beginPath();
       ctx.moveTo(0, 4);
       ctx.bezierCurveTo(-8, 4 + wingY * 0.3, -14, 8 + wingY * 0.5, -10, 12);
@@ -101,29 +114,29 @@ export default function LandingPage() {
       ctx.fill();
 
       // body
-      ctx.fillStyle = "#2C2825";
+      ctx.fillStyle = PERCY.body;
       ctx.beginPath();
       ctx.ellipse(4, 5, 12, 8, -0.15, 0, Math.PI * 2);
       ctx.fill();
 
       // breast
-      ctx.fillStyle = "#6B6560";
+      ctx.fillStyle = PERCY.belly;
       ctx.beginPath();
       ctx.ellipse(1, 6, 6, 5, 0.2, 0, Math.PI * 2);
       ctx.fill();
 
       // iridescent neck sheen
-      ctx.fillStyle = "rgba(120,180,120,0.14)";
+      ctx.fillStyle = PERCY.neckA;
       ctx.beginPath();
       ctx.ellipse(-6, -1, 4, 3, -0.3, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = "rgba(160,120,200,0.10)";
+      ctx.fillStyle = PERCY.neckB;
       ctx.beginPath();
       ctx.ellipse(-7, -2, 3, 2.5, -0.1, 0, Math.PI * 2);
       ctx.fill();
 
       // upper wing
-      ctx.fillStyle = "#3D3835";
+      ctx.fillStyle = "#5D6C78";
       ctx.beginPath();
       ctx.moveTo(2, 2);
       ctx.bezierCurveTo(-6, -2 - wingY, -16, -1 - wingY, -12, 6);
@@ -142,13 +155,13 @@ export default function LandingPage() {
       }
 
       // neck
-      ctx.fillStyle = "#4A4540";
+      ctx.fillStyle = "#73818E";
       ctx.beginPath();
       ctx.ellipse(-7, -2, 5, 4, -0.3, 0, Math.PI * 2);
       ctx.fill();
 
       // head
-      ctx.fillStyle = "#1C1917";
+      ctx.fillStyle = PERCY.head;
       ctx.beginPath();
       ctx.arc(-10, -6, 6, 0, Math.PI * 2);
       ctx.fill();
@@ -185,6 +198,22 @@ export default function LandingPage() {
       ctx.fillStyle = "#D4C8B8";
       ctx.beginPath();
       ctx.ellipse(-15.5, -6.8, 1.5, 1, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Percy mailbag
+      ctx.strokeStyle = PERCY.mailbagDark;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(-3, -2);
+      ctx.lineTo(10, 9);
+      ctx.stroke();
+      ctx.fillStyle = PERCY.mailbag;
+      ctx.beginPath();
+      ctx.roundRect?.(6.5, 6, 9.5, 7.8, 2.5) ?? ctx.rect(6.5, 6, 9.5, 7.8);
+      ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,0.32)";
+      ctx.beginPath();
+      ctx.arc(11, 10, 1.05, 0, Math.PI * 2);
       ctx.fill();
 
       // feet
@@ -390,6 +419,7 @@ export default function LandingPage() {
           if (!wordmarkShown && wordmarkEl) {
             wordmarkShown = true;
             wordmarkEl.style.opacity = "0.7";
+            if (taglineEl) taglineEl.style.opacity = "0.75";
           }
         }
       }
@@ -487,13 +517,27 @@ export default function LandingPage() {
 
   return (
     <div className="fixed inset-0 w-full h-full overflow-hidden bg-[#FAF8F4] select-none">
-      <canvas ref={canvasRef} className="fixed inset-0 w-full h-full" />
+      <canvas
+        ref={canvasRef}
+        className="fixed inset-0 w-full h-full"
+        aria-hidden="true"
+      />
+      <p className="sr-only">Percy the pigeon drops an envelope as a teaser for Pigeon Post.</p>
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 rounded-full border border-white/40 bg-white/35 px-4 py-1.5 text-[11px] tracking-[0.08em] uppercase text-[#29455f] backdrop-blur-[2px]">
+        delivered by percy
+      </div>
       <div
         ref={wordmarkRef}
         className="wordmark fixed bottom-[48px] left-1/2 -translate-x-1/2 font-serif italic text-[15px] text-[#2C4A6E] opacity-0 tracking-[0.04em] whitespace-nowrap transition-opacity duration-[1400ms] pointer-events-none"
         style={{ fontFamily: "'Playfair Display', serif" }}
       >
         pigeon post
+      </div>
+      <div
+        ref={taglineRef}
+        className="fixed bottom-[30px] left-1/2 -translate-x-1/2 text-[11px] text-[#385873] opacity-0 tracking-[0.05em] whitespace-nowrap transition-opacity duration-[1400ms] pointer-events-none"
+      >
+        percy is on route
       </div>
     </div>
   );
