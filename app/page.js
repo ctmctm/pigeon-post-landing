@@ -11,6 +11,8 @@ export default function LandingPage() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     const wordmarkEl = wordmarkRef.current;
+    const TARGET_URL = "https://preview.pigeonpost.app";
+    const ENVELOPE_SIZE = 28;
 
     let W, H;
     function resize() {
@@ -83,6 +85,19 @@ export default function LandingPage() {
       ctx.fill();
 
       ctx.restore();
+    }
+
+    function envelopeContainsPoint(letter, px, py) {
+      if (!letter || letter.alpha < 0.85 || letter.sc <= 0) return false;
+      const dx = px - letter.x;
+      const dy = py - letter.y;
+      const cos = Math.cos(-letter.rot);
+      const sin = Math.sin(-letter.rot);
+      const localX = (dx * cos - dy * sin) / letter.sc;
+      const localY = (dx * sin + dy * cos) / letter.sc;
+      const halfW = ENVELOPE_SIZE / 2;
+      const halfH = (ENVELOPE_SIZE * 0.72) / 2;
+      return localX >= -halfW && localX <= halfW && localY >= -halfH && localY <= halfH;
     }
 
     // ── Pigeon
@@ -524,7 +539,7 @@ export default function LandingPage() {
         ctx.translate(letter.x, letter.y);
         ctx.rotate(letter.rot);
         ctx.scale(letter.sc, letter.sc);
-        drawEnvelope(0, 0, 28, letter.alpha);
+        drawEnvelope(0, 0, ENVELOPE_SIZE, letter.alpha);
         ctx.restore();
       });
 
@@ -537,6 +552,32 @@ export default function LandingPage() {
         trail.length = 0;
       }
       animationFrameId = requestAnimationFrame(frame);
+    }
+
+    function onCanvasPointerMove(event) {
+      const rect = canvas.getBoundingClientRect();
+      const px = event.clientX - rect.left;
+      const py = event.clientY - rect.top;
+      const hit = letters.some((letter) => envelopeContainsPoint(letter, px, py));
+      canvas.style.cursor = hit ? "pointer" : "default";
+    }
+
+    function onCanvasClick(event) {
+      const rect = canvas.getBoundingClientRect();
+      const px = event.clientX - rect.left;
+      const py = event.clientY - rect.top;
+      const hit = letters.some((letter) => envelopeContainsPoint(letter, px, py));
+      if (hit) window.location.href = TARGET_URL;
+    }
+
+    function onCanvasTouchStart(event) {
+      const touch = event.touches?.[0];
+      if (!touch) return;
+      const rect = canvas.getBoundingClientRect();
+      const px = touch.clientX - rect.left;
+      const py = touch.clientY - rect.top;
+      const hit = letters.some((letter) => envelopeContainsPoint(letter, px, py));
+      if (hit) window.location.href = TARGET_URL;
     }
 
     const handleResize = () => {
@@ -552,11 +593,18 @@ export default function LandingPage() {
       });
     };
     window.addEventListener("resize", handleResize);
+    canvas.addEventListener("mousemove", onCanvasPointerMove);
+    canvas.addEventListener("click", onCanvasClick);
+    canvas.addEventListener("touchstart", onCanvasTouchStart, { passive: true });
 
     frame();
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      canvas.removeEventListener("mousemove", onCanvasPointerMove);
+      canvas.removeEventListener("click", onCanvasClick);
+      canvas.removeEventListener("touchstart", onCanvasTouchStart);
+      canvas.style.cursor = "default";
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
