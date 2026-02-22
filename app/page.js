@@ -11,7 +11,7 @@ export default function LandingPage() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     const wordmarkEl = wordmarkRef.current;
-    const TARGET_URL = "https://preview.pigeonpost.app";
+    const TARGET_URL = "https://preview.pigeonpost.app/login";
     const ENVELOPE_SIZE = 28;
 
     let W, H;
@@ -619,7 +619,7 @@ export default function LandingPage() {
       <p className="sr-only">Percy the pigeon drops an envelope as a teaser for Pigeon Post.</p>
       <a
         ref={wordmarkRef}
-        href="https://preview.pigeonpost.app"
+        href="https://preview.pigeonpost.app/login"
         aria-label="Open Pigeon Post preview"
         className="wordmark fixed bottom-[48px] left-1/2 -translate-x-1/2 font-serif italic text-[15px] text-[#2C4A6E] opacity-0 tracking-[0.04em] whitespace-nowrap transition-opacity duration-[1400ms] pointer-events-none"
         style={{ fontFamily: "'Playfair Display', serif" }}
