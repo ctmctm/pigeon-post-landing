@@ -86,7 +86,7 @@ export default function LandingPage() {
     }
 
     // ── Pigeon
-    function drawPigeon(x, y, scale, flapT, alpha, facing, bank = 0, bob = 0, wingAmp = 1) {
+    function drawPigeon(x, y, scale, flapT, alpha, facing, bob = 0, wingAmp = 1) {
       ctx.save();
       ctx.globalAlpha = alpha * 0.14;
       ctx.fillStyle = "#1C1917";
@@ -98,7 +98,6 @@ export default function LandingPage() {
       ctx.save();
       ctx.globalAlpha = alpha;
       ctx.translate(x, y + bob);
-      ctx.rotate(bank);
       ctx.scale(facing * scale, scale);
 
       const wingY = Math.sin(flapT) * (8 * wingAmp);
@@ -376,7 +375,7 @@ export default function LandingPage() {
     const LOOP = 380;
     let t = 0;
     let letterDropped = false;
-    let letter = null;
+    const letters = [];
     let wordmarkShown = false;
 
     function pigeonPos(t) {
@@ -388,9 +387,12 @@ export default function LandingPage() {
       return { x, y };
     }
 
-    function spawnLetter(x, y) {
+    function spawnLetter(x, y, index) {
+      const spread = Math.min(W * 0.28, 170);
+      const lane = index % 7;
+      const laneOffset = ((lane - 3) / 3) * spread * 0.5;
       wordmarkShown = false;
-      letter = {
+      return {
         x,
         y: y + 16,
         vx: 0,
@@ -401,14 +403,14 @@ export default function LandingPage() {
         sc: 0,
         landed: false,
         bounces: 0,
-        landX: W / 2,
+        landX: W / 2 + laneOffset + (Math.random() - 0.5) * 18,
         landY: H - 30,
         landRot: (Math.random() - 0.5) * 0.18,
       };
     }
 
-    function tickLetter() {
-      if (!letter || letter.landed) return;
+    function tickLetter(letter) {
+      if (letter.landed) return;
       letter.alpha = Math.min(1, letter.alpha + 0.07);
       letter.sc = Math.min(1, letter.sc + 0.06);
       letter.vy += 0.15;
@@ -469,17 +471,12 @@ export default function LandingPage() {
       drawParticles();
 
       const { x, y } = pigeonPos(t);
-      const prev = pigeonPos(t - 2);
-      const next = pigeonPos(t + 2);
       const progress = (t % LOOP) / LOOP;
       const dropWindow = progress > 0.39 && progress < 0.48;
 
       const flapRate = dropWindow ? 0.29 : progress > 0.62 ? 0.18 : 0.22;
       const flapT = t * flapRate + Math.sin(t * 0.03) * 0.35;
       const wingAmp = dropWindow ? 1.16 : progress > 0.62 ? 0.8 : 1.0;
-      const bank =
-        Math.atan2(next.y - prev.y, next.x - prev.x) * 0.24 +
-        Math.sin(t * 0.04) * 0.03;
       const bob = Math.sin(t * 0.12) * 1.6 + (dropWindow ? -1.1 : 0);
 
       trail.push({ x, y });
@@ -496,22 +493,22 @@ export default function LandingPage() {
       });
 
       if (!letterDropped && progress > 0.42) {
-        spawnLetter(x, y);
+        letters.push(spawnLetter(x, y, letters.length));
         letterDropped = true;
       }
 
-      tickLetter();
-      if (letter) {
+      letters.forEach((letter) => {
+        tickLetter(letter);
         ctx.save();
         ctx.translate(letter.x, letter.y);
         ctx.rotate(letter.rot);
         ctx.scale(letter.sc, letter.sc);
         drawEnvelope(0, 0, 28, letter.alpha);
         ctx.restore();
-      }
+      });
 
       const alpha = Math.min(1, Math.min(t % LOOP, LOOP - (t % LOOP)) / 20);
-      drawPigeon(x, y, 1.45, flapT, alpha, 1, bank, bob, wingAmp);
+      drawPigeon(x, y, 1.45, flapT, alpha, 1, bob, wingAmp);
 
       t++;
       if (t % LOOP === 0) {
@@ -527,10 +524,13 @@ export default function LandingPage() {
         const f = makeCloud(i / clouds.length);
         Object.assign(c, f);
       });
-      if (letter) {
-        letter.landX = W / 2;
+      letters.forEach((letter, i) => {
+        const spread = Math.min(W * 0.28, 170);
+        const lane = i % 7;
+        const laneOffset = ((lane - 3) / 3) * spread * 0.5;
+        letter.landX = W / 2 + laneOffset + (Math.random() - 0.5) * 18;
         letter.landY = H - 30;
-      }
+      });
     };
     window.addEventListener("resize", handleResize);
 
