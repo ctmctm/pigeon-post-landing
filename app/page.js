@@ -88,13 +88,22 @@ export default function LandingPage() {
     }
 
     // ── Pigeon
-    function drawPigeon(x, y, scale, flapT, alpha, facing) {
+    function drawPigeon(x, y, scale, flapT, alpha, facing, bank = 0, bob = 0, wingAmp = 1) {
+      ctx.save();
+      ctx.globalAlpha = alpha * 0.14;
+      ctx.fillStyle = "#1C1917";
+      ctx.beginPath();
+      ctx.ellipse(x + 1, y + 16 + bob * 0.35, 13 * scale, 4 * scale, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
       ctx.save();
       ctx.globalAlpha = alpha;
-      ctx.translate(x, y);
+      ctx.translate(x, y + bob);
+      ctx.rotate(bank);
       ctx.scale(facing * scale, scale);
 
-      const wingY = Math.sin(flapT) * 8;
+      const wingY = Math.sin(flapT) * (8 * wingAmp);
 
       // tail
       ctx.fillStyle = "#4C5760";
@@ -393,6 +402,7 @@ export default function LandingPage() {
         alpha: 0,
         sc: 0,
         landed: false,
+        bounces: 0,
         landX: W / 2,
         landY: H - 30,
         landRot: (Math.random() - 0.5) * 0.18,
@@ -411,6 +421,14 @@ export default function LandingPage() {
       if (letter.y >= letter.landY) {
         letter.y = letter.landY;
         letter.x = letter.landX;
+
+        if (letter.bounces < 1 && letter.vy > 1.2) {
+          letter.vy *= -0.34;
+          letter.rv *= 0.62;
+          letter.bounces += 1;
+          return;
+        }
+
         letter.vy = 0;
         letter.rot += (letter.landRot - letter.rot) * 0.12;
         if (Math.abs(letter.rot - letter.landRot) < 0.01) {
@@ -452,7 +470,18 @@ export default function LandingPage() {
       drawParticles();
 
       const { x, y } = pigeonPos(t);
-      const flapT = t * 0.2;
+      const prev = pigeonPos(t - 2);
+      const next = pigeonPos(t + 2);
+      const progress = (t % LOOP) / LOOP;
+      const dropWindow = progress > 0.39 && progress < 0.48;
+
+      const flapRate = dropWindow ? 0.29 : progress > 0.62 ? 0.18 : 0.22;
+      const flapT = t * flapRate + Math.sin(t * 0.03) * 0.35;
+      const wingAmp = dropWindow ? 1.16 : progress > 0.62 ? 0.8 : 1.0;
+      const bank =
+        Math.atan2(next.y - prev.y, next.x - prev.x) * 0.24 +
+        Math.sin(t * 0.04) * 0.03;
+      const bob = Math.sin(t * 0.12) * 1.6 + (dropWindow ? -1.1 : 0);
 
       trail.push({ x, y });
       if (trail.length > TRAIL) trail.shift();
@@ -467,7 +496,6 @@ export default function LandingPage() {
         ctx.restore();
       });
 
-      const progress = (t % LOOP) / LOOP;
       if (!letterDropped && progress > 0.42) {
         spawnLetter(x, y);
         letterDropped = true;
@@ -484,7 +512,7 @@ export default function LandingPage() {
       }
 
       const alpha = Math.min(1, Math.min(t % LOOP, LOOP - (t % LOOP)) / 20);
-      drawPigeon(x, y, 1.45, flapT, alpha, 1);
+      drawPigeon(x, y, 1.45, flapT, alpha, 1, bank, bob, wingAmp);
 
       t++;
       if (t % LOOP === 0) {
