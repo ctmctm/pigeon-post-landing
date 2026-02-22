@@ -388,6 +388,9 @@ export default function LandingPage() {
     }
 
     function getLandingTarget(index, total) {
+      if (index === 0) {
+        return { x: W / 2, y: H - 30 };
+      }
       const laneCount = Math.min(19, 7 + Math.floor(total / 8));
       const spread = Math.min(W * 0.46, 150 + total * 3.2);
       const lane = index % laneCount;
@@ -432,9 +435,9 @@ export default function LandingPage() {
         letter.y = letter.landY;
         letter.x = letter.landX;
 
-        if (letter.bounces < 1 && letter.vy > 1.2) {
-          letter.vy *= -0.34;
-          letter.rv *= 0.62;
+        if (letter.bounces < 1 && letter.vy > 1.6) {
+          letter.vy *= -0.2;
+          letter.rv *= 0.5;
           letter.bounces += 1;
           return;
         }
