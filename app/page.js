@@ -5,14 +5,12 @@ import { useEffect, useRef } from "react";
 export default function LandingPage() {
   const canvasRef = useRef(null);
   const wordmarkRef = useRef(null);
-  const taglineRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     const wordmarkEl = wordmarkRef.current;
-    const taglineEl = taglineRef.current;
 
     let W, H;
     function resize() {
@@ -437,7 +435,8 @@ export default function LandingPage() {
           if (!wordmarkShown && wordmarkEl) {
             wordmarkShown = true;
             wordmarkEl.style.opacity = "0.7";
-            if (taglineEl) taglineEl.style.opacity = "0.75";
+            wordmarkEl.style.pointerEvents = "auto";
+            wordmarkEl.style.cursor = "pointer";
           }
         }
       }
@@ -551,22 +550,15 @@ export default function LandingPage() {
         aria-hidden="true"
       />
       <p className="sr-only">Percy the pigeon drops an envelope as a teaser for Pigeon Post.</p>
-      <div className="fixed top-4 left-1/2 -translate-x-1/2 rounded-full border border-white/40 bg-white/35 px-4 py-1.5 text-[11px] tracking-[0.08em] uppercase text-[#29455f] backdrop-blur-[2px]">
-        delivered by percy
-      </div>
-      <div
+      <a
         ref={wordmarkRef}
+        href="https://preview.pigeonpost.app"
+        aria-label="Open Pigeon Post preview"
         className="wordmark fixed bottom-[48px] left-1/2 -translate-x-1/2 font-serif italic text-[15px] text-[#2C4A6E] opacity-0 tracking-[0.04em] whitespace-nowrap transition-opacity duration-[1400ms] pointer-events-none"
         style={{ fontFamily: "'Playfair Display', serif" }}
       >
         pigeon post
-      </div>
-      <div
-        ref={taglineRef}
-        className="fixed bottom-[30px] left-1/2 -translate-x-1/2 text-[11px] text-[#385873] opacity-0 tracking-[0.05em] whitespace-nowrap transition-opacity duration-[1400ms] pointer-events-none"
-      >
-        percy is on route
-      </div>
+      </a>
     </div>
   );
 }
